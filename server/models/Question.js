@@ -19,10 +19,6 @@ const questionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    codeSnippet: {
-      type: String,
-      default: "",
-    },
     isActive: {
       type: Boolean,
       default: true,

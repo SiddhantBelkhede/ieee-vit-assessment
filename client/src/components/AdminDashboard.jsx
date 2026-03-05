@@ -9,12 +9,12 @@ export default function AdminDashboard() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
+  // Removed codeSnippet from initial state
   const [formData, setFormData] = useState({
     type: "mcq",
     text: "",
     options: ["", "", "", ""],
     answer: "",
-    codeSnippet: "",
     isActive: true,
   });
 
@@ -46,7 +46,6 @@ export default function AdminDashboard() {
       text: "",
       options: ["", "", "", ""],
       answer: "",
-      codeSnippet: "",
       isActive: true,
     });
   };
@@ -211,33 +210,19 @@ export default function AdminDashboard() {
             </div>
 
             <div className="form-group" style={{ marginTop: "16px" }}>
-              <label className="label-mono">PROBLEM_STATEMENT</label>
+              <label className="label-mono">
+                PROBLEM_STATEMENT (Supports Markdown)
+              </label>
               <textarea
                 className="input-sharp"
-                style={{ minHeight: "80px", background: "#000" }}
+                style={{ minHeight: "150px", background: "#000" }}
                 value={formData.text}
+                placeholder="Type question here... Use backticks for code block e.g. ```javascript \n console.log('Hello'); \n ```"
                 onChange={(e) =>
                   setFormData({ ...formData, text: e.target.value })
                 }
               />
             </div>
-
-            {formData.type === "output" && (
-              <div
-                className="form-group animate-fade-in"
-                style={{ marginTop: "16px" }}
-              >
-                <label className="label-mono">SOURCE_CODE</label>
-                <textarea
-                  className="code-block-industrial"
-                  style={{ minHeight: "100px", width: "100%" }}
-                  value={formData.codeSnippet}
-                  onChange={(e) =>
-                    setFormData({ ...formData, codeSnippet: e.target.value })
-                  }
-                />
-              </div>
-            )}
 
             {formData.type === "mcq" && (
               <div

@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/apiService";
 
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+
 export default function Quiz({ user, setScoreData }) {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
@@ -113,13 +117,54 @@ export default function Quiz({ user, setScoreData }) {
 
       {/* Question Area */}
       <div className="question-display">
-        <h3 className="question-text">{q.text}</h3>
+        <div
+          className="question-text"
+          style={{ fontSize: "1.1rem", marginBottom: "20px" }}
+        >
+          <ReactMarkdown
+            components={{
+              code({ node, inline, className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || "");
+                return !inline && match ? (
+                  <SyntaxHighlighter
+                    style={vscDarkPlus}
+                    language={match[1]}
+                    PreTag="div"
+                    customStyle={{
+                      background: "#000",
+                      border: "1px solid var(--neon-cyan)",
+                      borderRadius: "var(--radius-std)",
+                      padding: "15px",
+                      marginTop: "15px",
+                      marginBottom: "15px",
+                    }}
+                    {...props}
+                  >
+                    {String(children).replace(/\n$/, "")}
+                  </SyntaxHighlighter>
+                ) : (
+                  <code
+                    className={className}
+                    style={{
+                      background: "rgba(255,255,255,0.1)",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      color: "var(--neon-cyan)",
+                      fontFamily: "'JetBrains Mono', monospace",
+                    }}
+                    {...props}
+                  >
+                    {children}
+                  </code>
+                );
+              },
+            }}
+          >
+            {q.text}
+          </ReactMarkdown>
+        </div>
 
-        {q.type === "output" && q.codeSnippet && (
-          <pre className="code-block-industrial">
-            <code>{q.codeSnippet}</code>
-          </pre>
-        )}
+        {/* Legacy codeSnippet block completely removed from here! */}
 
         <div className="response-section">
           {q.type === "mcq" ? (
@@ -142,6 +187,7 @@ export default function Quiz({ user, setScoreData }) {
                       alignItems: "center",
                       borderRadius: "var(--radius-std)",
                       padding: "12px 20px",
+                      textTransform: "none",
                       background: isSelected
                         ? "var(--btn-blue)"
                         : "transparent",
@@ -164,7 +210,9 @@ export default function Quiz({ user, setScoreData }) {
                     >
                       {String.fromCharCode(65 + i)}.
                     </span>
-                    {opt}
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                      {opt}
+                    </span>
                   </button>
                 );
               })}
@@ -182,7 +230,7 @@ export default function Quiz({ user, setScoreData }) {
                 <input
                   type="text"
                   className="input-sharp"
-                  style={{ borderLeft: "none" }}
+                  style={{ borderLeft: "none", textTransform: "none" }}
                   placeholder="Type your answer here..."
                   autoComplete="off"
                   value={answers[q._id] || ""}

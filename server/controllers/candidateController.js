@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Candidate from "../models/Candidate.js";
 import Question from "../models/Question.js";
 
@@ -5,20 +6,26 @@ import Question from "../models/Question.js";
 export const submitAssessment = async (req, res) => {
   const { name, instaId, answers, timeTaken } = req.body;
 
+  // 1. Initialize a secure database transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    // 1. Prevent duplicate submissions
-    const existingCandidate = await Candidate.findOne({ instaId });
+    // 2. Prevent duplicate submissions using the session lock
+    const existingCandidate = await Candidate.findOne({ instaId }).session(
+      session,
+    );
     if (existingCandidate) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "A candidate with this Instagram ID has already completed the assessment.",
-        });
+      await session.abortTransaction(); // Rollback any pending changes
+      session.endSession();
+      return res.status(400).json({
+        error:
+          "A candidate with this Instagram ID has already completed the assessment.",
+      });
     }
 
-    // 2. Fetch active questions to calculate the score securely on the backend
-    const questions = await Question.find({ isActive: true });
+    // 3. Fetch active questions to calculate the score securely
+    const questions = await Question.find({ isActive: true }).session(session);
     let score = 0;
 
     questions.forEach((q) => {
@@ -32,12 +39,28 @@ export const submitAssessment = async (req, res) => {
       }
     });
 
-    // 3. Save the candidate's results
+    // 4. Save the candidate's results as part of the transaction
     const candidate = new Candidate({ name, instaId, score, timeTaken });
-    await candidate.save();
+    await candidate.save({ session });
+
+    // 5. If everything succeeded, commit the transaction
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(201).json({ score, timeTaken });
   } catch (err) {
+    // If ANY error occurs, instantly roll back everything
+    await session.abortTransaction();
+    session.endSession();
+
+    // Fallback: Catch MongoDB's strict Duplicate Key Error (E11000)
+    if (err.code === 11000) {
+      return res.status(400).json({
+        error:
+          "Duplicate submission blocked by database. Your score is already safely recorded.",
+      });
+    }
+
     console.error("[SCORE CALCULATION ERROR]:", err);
     res.status(500).json({ error: err.message });
   }

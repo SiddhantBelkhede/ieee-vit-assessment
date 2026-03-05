@@ -25,9 +25,21 @@ export const getAllQuestions = async (req, res) => {
 // POST /api/admin/questions
 export const createQuestion = async (req, res) => {
   try {
+    // Explicitly destructure only the allowed fields
+    const { type, text, options, answer, isActive } = req.body;
+
     const count = await Question.countDocuments();
-    // Automatically place new questions at the bottom of the list
-    const newQ = new Question({ ...req.body, order: count });
+
+    // Construct the new question safely
+    const newQ = new Question({
+      type,
+      text,
+      options,
+      answer,
+      isActive,
+      order: count,
+    });
+
     await newQ.save();
     res.status(201).json(newQ);
   } catch (err) {
@@ -38,9 +50,14 @@ export const createQuestion = async (req, res) => {
 // PUT /api/admin/questions/:id
 export const updateQuestion = async (req, res) => {
   try {
-    const updated = await Question.findByIdAndUpdate(req.params.id, req.body, {
-      returnDocument: "after",
-    });
+    // Explicitly destructure only the allowed fields
+    const { type, text, options, answer, isActive } = req.body;
+
+    const updated = await Question.findByIdAndUpdate(
+      req.params.id,
+      { type, text, options, answer, isActive }, // Only update these fields
+      { returnDocument: "after" },
+    );
 
     if (!updated) return res.status(404).json({ error: "Record not found" });
     res.json(updated);
@@ -65,7 +82,6 @@ export const reorderQuestions = async (req, res) => {
   try {
     const { orderedIds } = req.body;
 
-    // Iterate through the array of IDs sent from the frontend and update their order integer
     const promises = orderedIds.map((id, index) => {
       return Question.findByIdAndUpdate(id, { order: index });
     });
