@@ -3,9 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Home from './components/Home.jsx';
 import Quiz from './components/Quiz.jsx';
+import EventInfo from './components/EventInfo.jsx';
 import Result from './components/Result.jsx';
 import AdminLogin from './components/AdminLogin.jsx';
 import AdminDashboard from './components/AdminDashboard.jsx';
+
 import './styles/main.css';
 
 export default function App() {
@@ -22,6 +24,10 @@ export default function App() {
             user.name && user.instaId ? 
             <Quiz user={user} setScoreData={setScoreData} /> : 
             <Navigate to="/" />
+          } />
+          
+          <Route path="/events" element={
+            scoreData ? <EventInfo scoreData={scoreData} /> : <Navigate to="/" />
           } />
           
           <Route path="/result" element={

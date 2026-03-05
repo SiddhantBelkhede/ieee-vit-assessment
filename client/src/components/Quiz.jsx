@@ -50,10 +50,10 @@ export default function Quiz({ user, setScoreData }) {
         timeTaken,
       });
       setScoreData(result);
-      navigate("/result");
+      navigate("/events");
     } catch (err) {
       alert(
-        "Something went wrong while submitting. Your session might have timed out.",
+        "Something went wrong while saving your answers. Please try again or check your connection.",
       );
       setLoading(false);
     }
@@ -215,7 +215,7 @@ export default function Quiz({ user, setScoreData }) {
         >
           {currentIndex < questions.length - 1
             ? "Next Question"
-            : "Finish Quiz"}
+            : "Finish Assessment"}
         </button>
       </div>
 
