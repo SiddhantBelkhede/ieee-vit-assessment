@@ -1,0 +1,29 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables (Sensitive Data)
+.env
+.env.local
+.env.production
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Build and logs
+dist/
+logs/
+*.log
+
+# Databases (if using local SQLite)
+*.sqlite
+*.db
+
+# Python/Flask specifics (if applicable)
+__pycache__/
+venv/
+.venv/
+*.pyc
