@@ -9,7 +9,9 @@ export default function AdminDashboard() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
-  // Removed codeSnippet from initial state
+  // State to track the selected leaderboard date
+  const [leaderboardDate, setLeaderboardDate] = useState("all");
+
   const [formData, setFormData] = useState({
     type: "mcq",
     text: "",
@@ -18,14 +20,16 @@ export default function AdminDashboard() {
     isActive: true,
   });
 
+  // LeaderboardDate to the dependency array so it refetches when the date changes
   useEffect(() => {
     loadData();
-  }, [tab]);
+  }, [tab, leaderboardDate]);
 
   const loadData = async () => {
     try {
       const qData = await api.getAllQuestionsAdmin();
-      const lData = await api.getLeaderboard();
+      // Pass the date state to the API call
+      const lData = await api.getLeaderboard(leaderboardDate);
       setQuestions(qData || []);
       setLeaderboard(lData || []);
     } catch (err) {
@@ -102,7 +106,6 @@ export default function AdminDashboard() {
       className="view-container-large animate-fade-in"
       style={{ maxWidth: "1100px" }}
     >
-      {/* Updated Branding Header */}
       <div
         className="admin-header"
         style={{
@@ -139,7 +142,6 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      {/* Modern Tabs */}
       <div
         className="admin-tabs"
         style={{ display: "flex", gap: "8px", marginBottom: "24px" }}
@@ -177,7 +179,6 @@ export default function AdminDashboard() {
             gap: "24px",
           }}
         >
-          {/* Left Side: Form Entry */}
           <div
             className="dashboard-panel"
             style={{
@@ -282,7 +283,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Right Side: Data Inventory with Dynamic Renumbering */}
           <div
             className="dashboard-panel"
             style={{
@@ -422,6 +422,54 @@ export default function AdminDashboard() {
             borderRadius: "var(--radius-std)",
           }}
         >
+          {/* Date Filter Control Bar */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "20px",
+            }}
+          >
+            <h4
+              className="label-mono"
+              style={{ color: "var(--neon-cyan)", margin: 0 }}
+            >
+              LEADERBOARD_METRICS
+            </h4>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <span className="label-mono" style={{ fontSize: "0.8rem" }}>
+                DATE_FILTER:
+              </span>
+              <input
+                type="date"
+                className="input-sharp"
+                value={leaderboardDate === "all" ? "" : leaderboardDate}
+                onChange={(e) => setLeaderboardDate(e.target.value || "all")}
+                style={{
+                  background: "#000",
+                  padding: "6px 12px",
+                  width: "auto",
+                }}
+              />
+              <button
+                className={`btn-small`}
+                onClick={() => setLeaderboardDate("all")}
+                style={{
+                  background:
+                    leaderboardDate === "all"
+                      ? "var(--neon-cyan)"
+                      : "transparent",
+                  color:
+                    leaderboardDate === "all" ? "#000" : "var(--neon-cyan)",
+                  padding: "6px 12px",
+                }}
+              >
+                OVERALL
+              </button>
+            </div>
+          </div>
+
           <table className="table-industrial">
             <thead style={{ borderBottom: "2px solid var(--neon-cyan)" }}>
               <tr>
@@ -432,32 +480,49 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {leaderboard.map((u, i) => (
-                <tr key={u._id}>
+              {leaderboard.length === 0 ? (
+                <tr>
                   <td
+                    colSpan="4"
+                    style={{
+                      textAlign: "center",
+                      padding: "40px 0",
+                      color: "var(--neon-purple)",
+                    }}
                     className="label-mono"
-                    style={{ color: "var(--neon-cyan)", fontSize: "1.1rem" }}
                   >
-                    {String(i + 1).padStart(2, "0")}
+                    NO_DATA_FOUND_FOR_SELECTED_PARAMETERS
                   </td>
-                  <td>
-                    <div style={{ fontWeight: 800 }}>{u.name}</div>
-                    <div
-                      className="label-mono"
-                      style={{
-                        fontSize: "0.65rem",
-                        color: "var(--neon-purple)",
-                      }}
-                    >
-                      @{u.instaId}
-                    </div>
-                  </td>
-                  <td className="status-value" style={{ fontSize: "1.4rem" }}>
-                    {u.score}
-                  </td>
-                  <td className="label-mono">{u.timeTaken}s</td>
                 </tr>
-              ))}
+              ) : (
+                leaderboard.map((u, i) => (
+                  <tr key={u._id}>
+                    <td
+                      className="label-mono"
+                      style={{ color: "var(--neon-cyan)", fontSize: "1.1rem" }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 800 }}>{u.name}</div>
+                      <div
+                        className="label-mono"
+                        style={{
+                          fontSize: "0.65rem",
+                          color: "var(--neon-purple)",
+                          textTransform: "none" /* THE FIX IS HERE */,
+                        }}
+                      >
+                        @{u.instaId}
+                      </div>
+                    </td>
+                    <td className="status-value" style={{ fontSize: "1.4rem" }}>
+                      {u.score}
+                    </td>
+                    <td className="label-mono">{u.timeTaken}s</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

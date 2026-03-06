@@ -19,9 +19,20 @@ const api = {
     return response.data;
   },
 
-  // Fetches the top-ranking candidates
-  getLeaderboard: async () => {
-    const response = await axios.get(`${CANDIDATE_URL}/leaderboard`);
+  // Accepts an optional date string (e.g., "2026-03-06") to filter scores
+  getLeaderboard: async (date = "all") => {
+    let url = `${CANDIDATE_URL}/leaderboard`;
+
+    if (date !== "all") {
+      const startOfDay = new Date(`${date}T00:00:00`).toISOString();
+      const endOfDay = new Date(`${date}T23:59:59.999`).toISOString();
+
+      url += `?startDate=${startOfDay}&endDate=${endOfDay}`;
+    } else {
+      url += `?date=all`;
+    }
+
+    const response = await axios.get(url);
     return response.data;
   },
 
