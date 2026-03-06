@@ -69,10 +69,20 @@ export const submitAssessment = async (req, res) => {
 // GET /api/candidate/leaderboard
 export const getLeaderboard = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
+    let filter = {};
+
+    if (startDate && endDate) {
+      filter.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
     // Sort primarily by highest score, secondarily by lowest time taken
-    const leaderboard = await Candidate.find()
+    const leaderboard = await Candidate.find(filter)
       .sort({ score: -1, timeTaken: 1 })
-      .limit(50); // Optional: limits to top 50
+      .limit(50);
 
     res.json(leaderboard);
   } catch (err) {

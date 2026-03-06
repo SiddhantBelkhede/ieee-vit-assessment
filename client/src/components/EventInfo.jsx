@@ -60,8 +60,12 @@ export default function EventInfo({ scoreData }) {
               alt={event.name}
               style={{
                 width: "100%",
+                aspectRatio: "3/4",
+                objectFit: "contain",
+                backgroundColor: "#000",
                 borderRadius: "var(--radius-std)",
                 border: "1px solid var(--border-white)",
+                padding: "10px",
               }}
             />
             <p
